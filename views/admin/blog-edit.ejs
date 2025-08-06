@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head') %>
+    <!-- CKEditor CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <style>
+      .ck-editor__editable_inline {
+        min-height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('../partials/nav') %>
+
+    <div class="container mt-4">
+      <div class="row">
+        <div class="col-md-12 mt-3">
+          <!-- Bu satırı 3e 12 şeklinde bölünsün 3 kolon sağda 9 kolon solda -->
+          <form method="post" enctype="multipart/form-data" action="/admin/blogs/<%= blog.blogid %>">
+            <input type="hidden" name="blogid" value="<%= blog.blogid %>" />
+            <input type="hidden" name="resim" value="<%= blog.resim %>" />
+            <div class="row mb-3">
+              <label for="baslik" class="col-sm-2 col-form-label">Başlık</label>
+              <div class="col sm-8">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="baslik"
+                  name="baslik"
+                  value="<%= blog.baslik %>"
+                />
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label for="aciklama" class="col-sm-2 col-form-label"
+                >Açıklama</label
+              >
+              <div class="col sm-8">
+                <textarea name="aciklama" id="aciklama" class="form-control" rows="10"><%- blog.aciklama %></textarea>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label for="resim" class="col-sm-2 col-form-label">Resim</label>
+              <div class="col sm-8">
+                <!-- Mevcut resmi göster -->
+                <div class="mb-2">
+                  <small class="form-text text-muted">Mevcut Resim:</small><br>
+                  <img src="/assets/images/<%= blog.resim %>" alt="<%= blog.baslik %>" 
+                       style="max-width: 200px; height: auto; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                </div>
+                
+                <!-- Yeni resim seçme -->
+                <input
+                  type="file"
+                  class="form-control"
+                  id="resim"
+                  name="resim"
+                  accept="image/*"
+                />
+                <small class="form-text text-muted">Yeni resim seçerseniz mevcut resim değiştirilir.</small>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label for="kategori" class="col-sm-2 col-form-label"
+                >Kategori</label
+              >
+              <div class="col sm-8">
+                <select name="kategori" id="kategori" class="form-select">
+                  <option value="" selected>Seçiniz</option>
+                  <% categories.forEach(function(category) { %> <% if
+                  (category.categoryid==blog.categoryid) { %>
+                  <option value="<%= category.categoryid %>" selected>
+                    <%= category.name %>
+                  </option>
+                  <% } else { %>
+                  <option value="<%= category.categoryid %>">
+                    <%= category.name %>
+                  </option>
+                  <% } %> <% }); %>
+                </select>
+                <!-- farklı bir yaklaşım için ise document.querySelector("#kategori").value = ejsout blog.categoryid yapabilirsin ÖNEMLİ -->
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-sm-8 offset-sm-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="anasayfa"
+                  name="anasayfa" <%= blog.anasayfa == 1 ? "checked" : "" %> />
+                  <label class="form-check-label" for="anasayfa">
+                    Anasayfa
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-sm-8 offset-sm-2">
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- CKEditor Initialization -->
+    <script>
+        ClassicEditor
+            .create(document.querySelector('#aciklama'), {
+                toolbar: [
+                    'heading', '|',
+                    'bold', 'italic', 'link', '|',
+                    'bulletedList', 'numberedList', '|',
+                    'outdent', 'indent', '|',
+                    'blockQuote', 'insertTable', '|',
+                    'undo', 'redo'
+                ],
+                language: 'tr'
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+    
+    <%- include('../partials/nav') %>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-3"> <!-- Bu satırı 3e 12 şeklinde bölünsün 3 kolon sağda 9 kolon solda -->
+
+                <%- include('../partials/category-menu',categories) %>
+
+            </div>
+            <div class="col-md-9">
+                <h1 class="h3 mb-3">
+                    <%= title %>
+                </h1>
+                
+
+
+                 <% blogs.forEach(blog => { %>
+                    
+
+                        <%- include('../partials/blog-card', { blog }) %>
+
+                        
+                 <% }); %>
+                
+            </div>
+            </div> 
+
+        </div>
+    </div>
+ 
+
+</body>
+</html>
