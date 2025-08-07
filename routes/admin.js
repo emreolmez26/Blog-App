@@ -108,6 +108,8 @@ router.post(
     const resim = req.file ? req.file.filename : "default.jpg"; // Dosya varsa filename'i al, yoksa default kullan
     const kategori = req.body.kategori; // Formdan kategoriyi al
     const anasayfa = req.body.anasayfa == "on" ? 1 : 0; // Anasayfa seçeneğini kontrol et
+    const altbaslik = req.body.altbaslik; // Formdan alt başlığı al
+    
 
     console.log("Form verileri:", {
       baslik,
@@ -120,8 +122,8 @@ router.post(
     try {
       // Veritabanına yeni blog kaydı ekle
       await db.query(
-        "INSERT INTO blog (baslik, aciklama, resim, anasayfa, categoryid) VALUES (?, ?, ?, ?, ?)",
-        [baslik, aciklama, resim, anasayfa, kategori]
+        "INSERT INTO blog (baslik, altbaslik, aciklama, resim, anasayfa, categoryid) VALUES (?, ?, ?, ?, ?, ?)",
+        [baslik, altbaslik, aciklama, resim, anasayfa, kategori]
       );
       res.redirect("/admin/blogs?action=create"); // Başarılıysa blog listesine yönlendir
     } catch (error) {
@@ -184,6 +186,7 @@ router.post("/admin/blogs/:blogid", upload.single("resim"), async function (req,
   const resim = req.file ? req.file.filename : req.body.resim; // Yeni dosya varsa onu al, yoksa mevcut resmi koru
   const anasayfa = req.body.anasayfa == "on" ? 1 : 0; // Anasayfa seçeneğini kontrol et
   const kategoriid = req.body.kategori; // Formdan kategoriyi al
+  const altbaslik = req.body.altbaslik; // Formdan alt başlığı al
 
   console.log("Güncellenecek blog ID:", blogid); // Debug için
   console.log("Dosya bilgisi:", req.file); // Debug için
@@ -191,8 +194,8 @@ router.post("/admin/blogs/:blogid", upload.single("resim"), async function (req,
   try {
     // Veritabanında blog kaydını güncelle
     await db.query(
-      "UPDATE blog SET baslik = ?, aciklama = ?, resim = ?, anasayfa = ?, categoryid = ? WHERE blogid = ?",
-      [baslik, aciklama, resim, anasayfa, kategoriid, blogid]
+      "UPDATE blog SET baslik = ?,altbaslik = ?, aciklama = ?, resim = ?, anasayfa = ?, categoryid = ? WHERE blogid = ?",
+      [baslik, altbaslik, aciklama, resim, anasayfa, kategoriid, blogid]
     );
     res.redirect("/admin/blogs?action=edit"); // Başarılıysa blog listesine yönlendir
   } catch (error) {
@@ -240,7 +243,7 @@ router.post("/admin/categories/:categoryid", async function (req, res, next) {
 router.get("/admin/blogs", async function (req, res, next) {
   // Üçüncü middleware fonksiyonu
   try {
-    const [blogs] = await db.query("SELECT blogid,baslik,resim FROM blog"); // Veritabanından bloglar
+    const [blogs] = await db.query("SELECT blogid,baslik,altbaslik,resim FROM blog"); // Veritabanından bloglar
     res.render("admin/blog-list", {
       title: "Blog Listesi",
       blogs: blogs,
