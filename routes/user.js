@@ -2,6 +2,9 @@ const express = require("express"); // Express modülünü içe aktar
 const router = express.Router(); // Router nesnesi oluştur
 const path = require("path"); // Path modülünü içe aktar
 const db = require("../data/db"); // Veritabanı bağlantısını içe aktar
+const Blog = require("../models/blog"); // Blog modelini içe aktar
+const Category = require("../models/category"); // Kategori modelini içe aktar
+const {Op} = require("sequelize"); // Sequelize operatörlerini içe aktar
 
 
 
@@ -9,14 +12,14 @@ router.use("/blogs/category/:categoryid",async function (req, res, next) {
   const categoryId = req.params.categoryid; // URL'den kategori ID'sini al
 
   try {
-    const blogs = await db.query("SELECT * FROM blog WHERE categoryid = ?",[categoryId]); // Veritabanından kategoriye göre blogları al
-    const categories = await db.query("SELECT * FROM category"); // Kategorileri al
-    
+    const blogs = await Blog.findAll({ where: { categoryid: categoryId }, raw: true }); // Veritabanından kategoriye göre blogları al
+    const categories = await Category.findAll({ raw: true }); // Kategorileri al
+
     res.render("users/blogs", {
       // Belirtilen kategoriye ait blogları listele
       title: "Kategori Blogları",
-      blogs: blogs[0], // blogs[0] - blog kayıtları
-      categories: categories[0], // categories[0] - kategori kayıtları
+      blogs: blogs, // blogs - blog kayıtları
+      categories: categories, // categories - kategori kayıtları
       selectedCategory: categoryId // Seçilen kategori ID'si
     });
   }
@@ -33,16 +36,16 @@ router.use("/blogs/:id",  async function (req, res, next) {
   const blogId = req.params.id; // URL'den blog ID'sini al
 
   try {
-    const blog = await db.query("SELECT * FROM blog WHERE blogid = ?",[blogId]); // Veritabanından blogu al
+    const blog = await Blog.findOne({ where: { blogid: blogId }, raw: true }); // Veritabanından blogu al
 
-    if (blog[0].length === 0) {
+    if (!blog) {
       // Eğer blog bulunamazsa, 404 sayfası göster
       return res.status(404).render("404", { title: "Blog Bulunamadı" });
     }
 
     res.render("users/blog-details",{
-      blog: blog[0][0], // blog[0][0] - ilk kayıt
-      title: blog[0][0].baslik // İlk kaydın başlığı
+      blog: blog, // blog[0][0] - ilk kayıt
+      title: blog.baslik // İlk kaydın başlığı
     }); // Belirtilen blog sayfasına erişildiğinde cevap gönder
 
   }
@@ -58,13 +61,13 @@ router.use("/blogs", async function (req, res, next) {
   // İkinci middleware fonksiyonu
 
   try {
-    const blogs = await db.execute("SELECT * FROM blog"); // Veritabanından blogları al
-    const categories = await db.execute("SELECT * FROM category"); // Kategorileri al
+    const blogs = await Blog.findAll({ raw: true }); // Veritabanından blogları al
+    const categories = await Category.findAll({ raw: true }); // Kategorileri al
     res.render("users/blogs", {
       // Anasayfaya erişildiğinde cevap gönder
       title: "Özel Kurslar",
-      blogs: blogs[0], // blogs[0] doğru
-      categories: categories[0], // categories[0] doğru
+      blogs: blogs, // blogs[0] doğru
+      categories: categories, // categories[0] doğru
       selectedCategory: null // Seçilen kategori yok
     });
   } catch (err) {
@@ -76,15 +79,15 @@ router.use("/blogs", async function (req, res, next) {
 router.use("/", async function (req, res, next) {
   // Middleware fonksiyonu tanımla.
   try {
-    const blogs = await db.query("SELECT * FROM blog where anasayfa = 1"); // Anasayfa bloglarını al
-    const categories = await db.query("SELECT * FROM category"); // Kategorileri al
+    const blogs = await Blog.findAll({ where: { anasayfa: 1 }, }, { raw: true }); // Anasayfa bloglarını al
+    const categories = await Category.findAll({ raw: true }); // Kategorileri al
 
     console.log(categories[0]);
     res.render("users/index", {
       // Anasayfaya erişildiğinde cevap gönder
       title: "Popüler Bloglar",
-      blogs: blogs[0], // Database'den gelen blog verilerini kullan
-      categories: categories[0], // Database'den gelen kategori verilerini kullan
+      blogs: blogs, // Database'den gelen blog verilerini kullan
+      categories: categories, // Database'den gelen kategori verilerini kullan
       selectedCategory: null // Seçilen kategori yok
     });
   } catch (err) {

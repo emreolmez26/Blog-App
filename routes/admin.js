@@ -4,16 +4,15 @@ const path = require("path"); // Path modülünü içe aktar
 const db = require("../data/db"); // Veritabanı bağlantısını içe aktar
 const { upload } = require("../helpers/image-upload"); // Dosya yükleme middleware'ini içe aktar
 const fs = require("fs"); // Dosya sistemi modülünü içe aktar
+const Blog = require("../models/blog"); // Blog modelini içe aktar
+const Category = require("../models/category"); // Kategori modelini içe aktar
 
 // DELETE onay sayfasını göster - GET isteği
 router.get("/admin/blogs/:blogid/delete", async function (req, res, next) {
   const blogId = req.params.blogid; // URL'den blog ID'sini al
 
   try {
-    const [blogs] = await db.query("SELECT * FROM blog WHERE blogid = ?", [
-      blogId,
-    ]); // Veritabanından blogu al
-    const blog = blogs[0]; // İlk kaydı al
+    const blog = await Blog.findOne({ where: { blogid: blogId }, raw: true }); // Veritabanından blogu al
 
     res.render("admin/blog-delete", {
       // blog-delete.ejs dosyasını render et
@@ -32,7 +31,7 @@ router.post("/admin/blogs/:blogid/delete", async function (req, res, next) {
   const blogId = req.body.blogid; // Formdan blog ID'sini al
 
   try {
-    await db.query("DELETE FROM blog WHERE blogid = ?", [blogId]); // Veritabanından blogu sil
+    await Blog.destroy({ where: { blogid: blogId } }); // Veritabanından blogu sil
     res.redirect("/admin/blogs?action=delete"); // Başarılıysa blog listesine yönlendir
   } catch (error) {
     console.error("Error deleting blog:", error);
@@ -47,11 +46,7 @@ router.get(
     const categoryId = req.params.categoryid; // URL'den kategori ID'sini al
 
     try {
-      const [categories] = await db.query(
-        "SELECT * FROM category WHERE categoryid = ?",
-        [categoryId]
-      ); // Veritabanından kategoriyi al
-      const category = categories[0]; // İlk kaydı al
+      const category = await Category.findOne({ where: { categoryid: categoryId }, raw: true }); // Veritabanından kategoriyi al
 
       res.render("admin/category-delete", {
         // category-delete.ejs dosyasını render et
@@ -76,7 +71,7 @@ router.post(
     const categoryId = req.body.categoryid; // Formdan kategori ID'sini al
 
     try {
-      await db.query("DELETE FROM category WHERE categoryid = ?", [categoryId]); // Veritabanından kategoriyi sil
+      await Category.destroy({ where: { categoryid: categoryId } }); // Veritabanından kategoriyi sil
       res.redirect("/admin/categories?action=delete"); // Başarılıysa kategori listesine yönlendir
     } catch (error) {
       console.error("Error deleting category:", error);
@@ -88,10 +83,10 @@ router.post(
 router.get("/admin/blog/create", async function (req, res, next) {
   // Üçüncü middleware fonksiyonu
   try {
-    const categories = await db.query("SELECT * FROM category"); // Kategorileri al
+    const categories = await Category.findAll(); // Kategorileri al
     res.render("admin/blog-create", {
       title: "Yeni Blog Oluştur",
-      categories: categories[0], // categories[0] - kategori kayıtları
+      categories: categories, // categories - kategori kayıtları
     });
   } catch (error) {
     console.error("Error fetching categories:", error);
@@ -109,7 +104,6 @@ router.post(
     const kategori = req.body.kategori; // Formdan kategoriyi al
     const anasayfa = req.body.anasayfa == "on" ? 1 : 0; // Anasayfa seçeneğini kontrol et
     const altbaslik = req.body.altbaslik; // Formdan alt başlığı al
-    
 
     console.log("Form verileri:", {
       baslik,
@@ -121,10 +115,14 @@ router.post(
 
     try {
       // Veritabanına yeni blog kaydı ekle
-      await db.query(
-        "INSERT INTO blog (baslik, altbaslik, aciklama, resim, anasayfa, categoryid) VALUES (?, ?, ?, ?, ?, ?)",
-        [baslik, altbaslik, aciklama, resim, anasayfa, kategori]
-      );
+      await Blog.create({
+        baslik,
+        altbaslik,
+        aciklama,
+        resim,
+        anasayfa,
+        categoryid: kategori,
+      });
       res.redirect("/admin/blogs?action=create"); // Başarılıysa blog listesine yönlendir
     } catch (error) {
       console.error("Error creating blog:", error);
@@ -150,7 +148,7 @@ router.post("/admin/category/create", async function (req, res, next) {
   const name = req.body.name; // Formdan başlığı al
   try {
     // Veritabanına yeni kategori kaydı ekle
-    await db.query("INSERT INTO category (name) VALUES (?)", [name]);
+    await Category.create({ name });
     res.redirect("/admin/categories?action=create"); // Başarılıysa kategori listesine yönlendir
   } catch (error) {
     console.error("Error creating category:", error);
@@ -164,13 +162,13 @@ router.get("/admin/blogs/:blogid", async function (req, res, next) {
   const blogId = req.params.blogid; // URL'den blog ID'sini al
 
   try {
-    const [blog] = await db.query("SELECT * FROM blog WHERE blogid = ?", [
-      blogId,
-    ]); // Veritabanından blogu al
-    const [categories] = await db.query("SELECT * FROM category"); // Kategorileri al
+    const blog = await Blog.findByPk(blogId); // Veritabanından blogu al
+    const categories = await Category.findAll(); // Kategorileri al
     res.render("admin/blog-edit", {
-      title: blog[0].baslik,
-      blog: blog[0],
+      title: blog.dataValues.baslik,
+      blog: blog.dataValues, // blog - düzenlenecek blog kaydı
+      // Sequelize findAll() bir dizi döndürür; .dataValues sadece tek bir kayıt içindir.
+      // EJS içerisinde forEach ile dönebilmek için doğrudan diziyi gönderiyoruz.
       categories: categories,
     }); // Belirtilen blog sayfasına erişildiğinde cevap gönder
   } catch (error) {
@@ -179,43 +177,55 @@ router.get("/admin/blogs/:blogid", async function (req, res, next) {
   }
 });
 
-router.post("/admin/blogs/:blogid", upload.single("resim"), async function (req, res, next) {
-  const blogid = req.params.blogid; // ✅ DOĞRU - URL'den blog ID'sini al
-  const baslik = req.body.baslik; // Formdan başlığı al
-  const aciklama = req.body.aciklama; // Formdan içeriği al
-  const resim = req.file ? req.file.filename : req.body.resim; // Yeni dosya varsa onu al, yoksa mevcut resmi koru
-  const anasayfa = req.body.anasayfa == "on" ? 1 : 0; // Anasayfa seçeneğini kontrol et
-  const kategoriid = req.body.kategori; // Formdan kategoriyi al
-  const altbaslik = req.body.altbaslik; // Formdan alt başlığı al
+router.post(
+  "/admin/blogs/:blogid",
+  upload.single("resim"),
+  async function (req, res, next) {
+    const blogid = req.params.blogid; // ✅ DOĞRU - URL'den blog ID'sini al
+    const baslik = req.body.baslik; // Formdan başlığı al
+    const aciklama = req.body.aciklama; // Formdan içeriği al
+    const resim = req.file ? req.file.filename : req.body.resim; // Yeni dosya varsa onu al, yoksa mevcut resmi koru
+    const anasayfa = req.body.anasayfa == "on" ? 1 : 0; // Anasayfa seçeneğini kontrol et
+    const kategoriid = req.body.kategori; // Formdan kategoriyi al
+    const altbaslik = req.body.altbaslik; // Formdan alt başlığı al
 
-  console.log("Güncellenecek blog ID:", blogid); // Debug için
-  console.log("Dosya bilgisi:", req.file); // Debug için
+    console.log("Güncellenecek blog ID:", blogid); // Debug için
+    console.log("Dosya bilgisi:", req.file); // Debug için
 
-  try {
-    // Veritabanında blog kaydını güncelle
-    await db.query(
-      "UPDATE blog SET baslik = ?,altbaslik = ?, aciklama = ?, resim = ?, anasayfa = ?, categoryid = ? WHERE blogid = ?",
-      [baslik, altbaslik, aciklama, resim, anasayfa, kategoriid, blogid]
-    );
-    res.redirect("/admin/blogs?action=edit"); // Başarılıysa blog listesine yönlendir
-  } catch (error) {
-    console.error("Error updating blog:", error);
-    res.status(500).send("Blog güncellenirken bir hata oluştu.");
+    try {
+      // Veritabanında blog kaydını güncelle
+      await Blog.update(
+        {
+          baslik,
+          altbaslik,
+          aciklama,
+          resim,
+          anasayfa,
+          categoryid: kategoriid
+        },
+        {
+          where: { blogid: blogid }
+        }
+      );
+      res.redirect("/admin/blogs?action=edit"); // Başarılıysa blog listesine yönlendir
+    } catch (error) {
+      console.error("Error updating blog:", error);
+      res.status(500).send("Blog güncellenirken bir hata oluştu.");
+    }
   }
-});
+);
 
 router.get("/admin/categories/:categoryid", async function (req, res, next) {
   // Üçüncü middleware fonksiyonu
   const categoryId = req.params.categoryid; // URL'den kategori ID'sini al
   try {
-    const [category] = await db.query(
-      "SELECT * FROM category WHERE categoryid = ?",
-      [categoryId]
-    ); // Veritabanından kategoriyi al
+    // Kategori ID'sine göre kategoriyi bul
+    const category = await Category.findByPk(categoryId); // Kategori ID'sine göre kategoriyi bul
+    console.log(category);
     if (category) {
       return res.render("admin/category-edit", {
-        title: category[0].name,
-        category: category[0],
+        title: category.dataValues.name,
+        category: category.dataValues, // Kategori verilerini gönder. dataValues kullanma sebebi
       }); // Belirtilen kategori sayfasına erişildiğinde cevap gönder
     }
     res.redirect("/admin/categories");
@@ -229,10 +239,10 @@ router.post("/admin/categories/:categoryid", async function (req, res, next) {
   const name = req.body.name; // Formdan başlığı al
   try {
     // Veritabanında kategori kaydını güncelle
-    await db.query("UPDATE category SET name = ? WHERE categoryid = ?", [
-      name,
-      categoryid,
-    ]);
+    await Category.update(
+      { name },
+      { where: { categoryid } }
+    );
     res.redirect("/admin/categories?action=edit"); // Başarılıysa kategori listesine yönlendir
   } catch (error) {
     console.error("Error updating category:", error);
@@ -243,7 +253,9 @@ router.post("/admin/categories/:categoryid", async function (req, res, next) {
 router.get("/admin/blogs", async function (req, res, next) {
   // Üçüncü middleware fonksiyonu
   try {
-    const [blogs] = await db.query("SELECT blogid,baslik,altbaslik,resim FROM blog"); // Veritabanından bloglar
+    const blogs = await Blog.findAll({
+      attributes: ["blogid", "baslik", "altbaslik", "resim"],
+    }); // Veritabanından bloglar
     res.render("admin/blog-list", {
       title: "Blog Listesi",
       blogs: blogs,
@@ -257,7 +269,8 @@ router.get("/admin/blogs", async function (req, res, next) {
 router.get("/admin/categories", async function (req, res, next) {
   // Üçüncü middleware fonksiyonu
   try {
-    const [categories] = await db.query("SELECT * FROM category"); // Veritabanından kategoriler
+    const categories = await Category.findAll(); // Veritabanından kategoriler
+
     res.render("admin/category-list", {
       title: "Kategori Listesi",
       categories: categories,

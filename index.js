@@ -5,6 +5,8 @@ const adminRoutes = require('./routes/admin'); // Admin rotalarını içe aktar
 
 
 const app = express(); // Express uygulamasını başlat.
+
+
 app.set('view engine', 'ejs'); // Görünüm motoru olarak EJS kullan
 app.use(express.urlencoded({ extended: true })); // URL kodlamasını kullanmak için middleware ekle.
 
