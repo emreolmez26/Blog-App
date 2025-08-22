@@ -37,11 +37,11 @@
                         <% categories.forEach(category => { %>
                             <tr>
                                 <td>
-                                    <%= category.dataValues.categoryid %>
+                                    <%= category.dataValues.id %>
                                 </td>
                                 <td><%= category.dataValues.name %></td>
-                                <td><a class="btn btn-sm btn-primary" href="/admin/categories/<%= category.dataValues.categoryid %>">edit</a>
-                                    <a class="btn btn-sm btn-danger" href="/admin/categories/<%= category.dataValues.categoryid %>/delete">delete</a>
+                                <td><a class="btn btn-sm btn-primary" href="/admin/categories/<%= category.dataValues.id %>">edit</a>
+                                    <a class="btn btn-sm btn-danger" href="/admin/categories/<%= category.dataValues.id %>/delete">delete</a>
                                 </td>
                                 
                             </tr>

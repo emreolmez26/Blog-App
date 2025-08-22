@@ -5,6 +5,8 @@ const Sequelize = require('sequelize'); // Sequelize modülünü içe aktar
 const sequelize = new Sequelize(config.db.database, config.db.user, config.db.password, { //config dosyası
   host: config.db.host,
   dialect: 'mysql',
+  storage: './session.mysql' // SQLite için storage yolu
+
 });
 
 async function testConnection() {

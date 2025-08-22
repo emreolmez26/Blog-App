@@ -1,9 +1,52 @@
+<!-- Pagination: Sadece 1'den fazla sayfa varsa göster -->
+<% if (totalPages>1) { %>
+
 <nav aria-label="Page navigation example">
-                    <ul class="pagination">
-                        <li class="page-item"><a class="page-link" href="#">Önceki</a></li>
-                        <li class="page-item"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Sonraki</a></li>
-                    </ul>
-                </nav>
+  <ul class="pagination">
+    <!-- ÖNCEKİ BUTONU: İlk sayfada disabled, diğer sayfalarda çalışır -->
+    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+      <a
+        class="page-link"
+        href="<%= currentPage > 1 ? '?page=' + (currentPage - 2) : '#' %>"
+        >Önceki</a
+      >
+      <!-- 
+        Açıklama: 
+        - currentPage === 1 ? 'disabled' : '' → İlk sayfada gri (disabled) yapar
+        - currentPage > 1 ? '?page=' + (currentPage - 2) : '#' → Önceki sayfaya yönlendirir
+        - (currentPage - 2) kullanımı: currentPage 1'den başlar, page parametresi 0'dan başlar
+      -->
+    </li>
+
+    <!-- SAYFA NUMARALARı: Tüm sayfaları listeler -->
+    <% for( let index = 0; index < totalPages; index++ ) { %>
+    <li class="page-item <%= currentPage === index + 1 ? 'active' : '' %>">
+      <a class="page-link" href="?page=<%= index %>"><%= index + 1 %></a>
+    </li>
+    <!-- 
+      Açıklama:
+      - index 0'dan başlar, currentPage 1'den başlar
+      - currentPage === index + 1 ? 'active' : '' → Mevcut sayfayı mavi yapar
+      - href="?page=<%= index %>" → Sayfa parametresi 0'dan başlar
+      - <%= index + 1 %> → Görünen sayfa numarası 1'den başlar
+    -->
+    <% } %>
+
+    <!-- SONRAKİ BUTONU: Son sayfada disabled, diğer sayfalarda çalışır -->
+    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+      <a
+        class="page-link"
+        href="<%= currentPage < totalPages ? '?page=' + currentPage : '#' %>"
+        >Sonraki</a
+      >
+      <!-- 
+        Açıklama:
+        - currentPage === totalPages ? 'disabled' : '' → Son sayfada gri (disabled) yapar
+        - currentPage < totalPages ? '?page=' + currentPage : '#' → Sonraki sayfaya yönlendirir
+        - currentPage kullanımı: currentPage 1'den başlar, bir sonraki sayfa için doğru değer
+      -->
+    </li>
+  </ul>
+</nav>
+
+<% } %>

@@ -9,18 +9,31 @@
     <div class="container mt-4">
       <div class="row">
         <div class="col-md-12 mt-3">
-          <!-- Bu satırı 3e 12 şeklinde bölünsün 3 kolon sağda 9 kolon solda -->
-           <div class="alert alert-warning">
+          <!-- Hata mesajı varsa göster -->
+          <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-danger">
+            <h5>Kategori Silinemez!</h5>
+            <p><%= error %></p>
+            <a href="/admin/categories" class="btn btn-secondary">Geri Dön</a>
+          </div>
+          <% } else { %>
+          <!-- Normal silme uyarısı -->
+          <div class="alert alert-warning">
             <p class="mb-3">
-                <b>Bu Kategori silinecek:</b> <%= category.name %> <br> Bu kaydı silmek ister misiniz?
+              <b>Bu Kategori silinecek:</b> <%= category.name %> <br />
+              Bu kaydı silmek ister misiniz?
             </p>
             <form method="post">
-                <input type="hidden" name="categoryid" value="<%= category.categoryid %>">
-                <button type="submit" class="btn btn-danger">Sil</button>
-                <a href="/admin/categories" class="btn btn-secondary">İptal</a>
+              <input
+                type="hidden"
+                name="categoryid"
+                value="<%= category.id %>"
+              />
+              <button type="submit" class="btn btn-danger">Sil</button>
+              <a href="/admin/categories" class="btn btn-secondary">İptal</a>
             </form>
-           </div>
-
+          </div>
+          <% } %>
         </div>
       </div>
     </div>
