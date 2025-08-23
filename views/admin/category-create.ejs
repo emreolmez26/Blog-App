@@ -11,6 +11,7 @@
         <div class="col-md-12 mt-3">
           <!-- Bu satırı 3e 12 şeklinde bölünsün 3 kolon sağda 9 kolon solda -->
           <form method="post" action="/admin/category/create">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="row mb-3">
               <label for="name" class="col-sm-2 col-form-label">Name</label>
               <div class="col sm-8">

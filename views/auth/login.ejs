@@ -25,6 +25,7 @@
 
           <!-- Login Form -->
           <form method="post" action="/account/login">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="row mb-3">
               <label for="email" class="col-sm-2 col-form-label">Email</label>
               <div class="col sm-8">

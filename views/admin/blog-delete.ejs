@@ -16,6 +16,7 @@
               Bu kaydı silmek ister misiniz?
             </p>
             <form method="post">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <input type="hidden" name="blogid" value="<%= blog.id %>" />
               <button type="submit" class="btn btn-danger">Sil</button>
               <a href="/admin/blogs" class="btn btn-secondary">İptal</a>

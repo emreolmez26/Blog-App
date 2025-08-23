@@ -17,6 +17,11 @@ exports.post_register = async function (req, res) {
   const { name, email, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      req.session.message = "Bu e-posta adresi zaten kayıtlı.";
+      return res.redirect("/account/login");
+    }
     await User.create({
       fullname: name,
       email,
@@ -33,9 +38,13 @@ exports.post_register = async function (req, res) {
 };
 
 exports.get_login = async function (req, res) {
+  const message = req.session.message;
+  delete req.session.message;
   try {
     return res.render("auth/login", {
       title: "Login",
+      error: message,
+      csrfToken: req.csrfToken(), // CSRF token'ını template'e gönder
     });
   } catch (error) {
     console.error("Error rendering login page:", error);

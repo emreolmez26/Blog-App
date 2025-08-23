@@ -3,6 +3,7 @@ const Category = require("../models/category"); // Kategori modelini içe aktar
 const fs = require("fs"); // Dosya sistemi modülünü içe aktar
 const slugify = require("../helpers/slugify"); // Slugify fonksiyonunu içe aktar
 
+
 exports.get_blog_delete = async function (req, res, next) {
   const blogId = req.params.blogid; // URL'den blog ID'sini al
 

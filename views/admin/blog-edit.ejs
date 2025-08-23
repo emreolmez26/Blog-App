@@ -24,7 +24,8 @@
           <% } %>
           
           <!-- Bu satırı 3e 12 şeklinde bölünsün 3 kolon sağda 9 kolon solda -->
-          <form method="post" enctype="multipart/form-data" action="/admin/blogs/<%= blog.id %>">
+          <form method="post" enctype="multipart/form-data" action="/admin/blogs/<%= blog.id %>?_csrf=<%= csrfToken %>">
+
             <input type="hidden" name="blogid" value="<%= blog.id %>" />
             <input type="hidden" name="resim" value="<%= blog.resim %>" />
             <div class="row mb-3">
