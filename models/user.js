@@ -15,6 +15,14 @@ const User = sequelize.define("user", {
     password: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    resetToken: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    resetTokenExpiration: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: true // Oluşturulma ve güncellenme tarihlerini otomatik ekler

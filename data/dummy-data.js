@@ -2,6 +2,7 @@ const Category = require("../models/category"); // Kategori modelini içe aktar
 const Blog = require("../models/blog"); // Blog modelini içe aktar
 const slugify = require("../helpers/slugify"); // Slugify fonksiyonunu içe aktar
 const User = require("../models/user"); // User modelini içe aktar
+const Role = require("../models/role"); // Role modelini içe aktar
 const bcrypt = require("bcrypt"); // Bcrypt modülünü içe aktar
 
 async function sync() {
@@ -54,17 +55,58 @@ async function sync() {
         categoryId: "2", // Mobil Uygulama kategorisi
       },
     ]);
-    // Dummy kullanıcı oluşturma
+    
+    // Dummy kullanıcılar oluşturma
     const hashedPassword = await bcrypt.hash("password", 10);
-    await User.create({
-      fullname: "John Doe",
-      email: "john@example.com",
-      password: hashedPassword,
-    });
+    
+    const users = await User.bulkCreate([
+      {
+        fullname: "John Doe",
+        email: "john@example.com",
+        password: hashedPassword,
+      },
+      {
+        fullname: "Jane Smith", 
+        email: "jane@example.com",
+        password: hashedPassword,
+      },
+      {
+        fullname: "Bob Wilson",
+        email: "bob@example.com", 
+        password: hashedPassword,
+      },
+      {
+        fullname: "Alice Johnson",
+        email: "alice@example.com",
+        password: hashedPassword,
+      },
+      {
+        fullname: "Mike Brown",
+        email: "mike@example.com",
+        password: hashedPassword,
+      }
+    ]);
 
   } else {
     console.log("ℹ️ Dummy data zaten mevcut, yükleme atlandı");
   }
+  
+  // Roller oluştur
+  const roles = await Role.bulkCreate([
+    { roleName: "Admin" },
+    { roleName: "Editor" }, 
+    { roleName: "Guest" },
+  ]);
+  
+  // Kullanıcıları tekrar çek (bulkCreate'den sonra ilişkiler için)
+  const users = await User.findAll();
+  
+  // Rol atamaları - Array index ile
+  await users[0].addRole(roles[0]); // John Doe → Admin
+  await users[1].addRole(roles[1]); // Jane Smith → Editor  
+  await users[2].addRole(roles[2]); // Bob Wilson → Guest
+  await users[3].addRole(roles[1]); // Alice Johnson → Editor
+  // users[4] (Mike Brown) - Rol atanmadı
 }
 
 module.exports = sync; // Fonksiyonu dışa aktar

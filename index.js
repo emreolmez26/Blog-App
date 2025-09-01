@@ -56,6 +56,7 @@ app.use("/account", authRoutes); // Auth rotalarını uygulamaya ekle.
 const Category = require("./models/category"); // Kategori modelini içe aktar
 const Blog = require("./models/blog"); // Blog modelini içe aktar
 const User = require("./models/user"); // User modelini içe aktar
+const Role = require("./models/role"); // Role modelini içe aktar
 
 //İlişkiler
 //one to many - Bir kategori birden fazla bloga sahip, bir blog bir kategoriye ait
@@ -66,12 +67,15 @@ Blog.belongsTo(Category, { foreignKey: "categoryId" });
 User.hasMany(Blog, { foreignKey: "userId", allowNull: true }); // userId kolonu ekle
 Blog.belongsTo(User, { foreignKey: "userId" }); // Blog modeline User ile ilişki ekle
 
+Role.belongsToMany(User, { through: "UserRoles" });
+User.belongsToMany(Role, { through: "UserRoles" });
+
 //Uygulanması -sync
 
 //ııef
 (async () => {
-  await sequelize.sync({ force: true }); // 🔄 Bir kerelik: userId kolonu eklemek için
-  await dummyData(); // Dummy data yükle
+  // await sequelize.sync({ force: true }); // 🔄 Bir kerelik: userId kolonu eklemek için
+  // await dummyData(); // Dummy data yükle
 })();
 
 app.listen(3000, () => {

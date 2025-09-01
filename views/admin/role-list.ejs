@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head') %>
+  </head>
+  <body>
+    <%- include('../partials/nav') %>
+
+    <div class="container mt-4">
+      <div class="row">
+        <div class="col-md-12 mt-3">
+          <h4>Roller</h4>
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th scope="col">id</th>
+                <th style="width: 130px" scope="col">rol</th>
+                <th scope="col">Kullanıcı Sayısı</th>
+                <th scope="col">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% roles.forEach(role => { %>
+              <tr>
+                <td><%= role.id %></td>
+                <td><%= role.roleName %></td>
+                <td><%= role.userCount %></td>
+                <td>
+                  <a
+                    class="btn btn-sm btn-primary"
+                    href="/admin/roles/<%= role.id %>/edit"
+                    >edit</a
+                  >
+                  <a
+                    class="btn btn-sm btn-danger"
+                    href="/admin/roles/<%= role.id %>/delete"
+                    >delete</a
+                  >
+                </td>
+              </tr>
+
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+                

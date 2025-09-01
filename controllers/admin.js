@@ -2,6 +2,10 @@ const Blog = require("../models/blog"); // Blog modelini içe aktar
 const Category = require("../models/category"); // Kategori modelini içe aktar
 const fs = require("fs"); // Dosya sistemi modülünü içe aktar
 const slugify = require("../helpers/slugify"); // Slugify fonksiyonunu içe aktar
+const sequelize = require("../data/db");
+const Role = require("../models/role"); // Role modelini içe aktar
+const User = require("../models/user"); // User modelini içe aktar
+const { raw } = require("mysql2");
 
 
 exports.get_blog_delete = async function (req, res, next) {
@@ -326,3 +330,26 @@ exports.get_category_list = async function (req, res, next) {
     res.status(500).send("Kategoriler alınırken bir hata oluştu.");
   }
 };
+
+exports.get_role_list = async function (req, res, next) {
+  // Üçüncü middleware fonksiyonu
+  try {
+    // Basit rol listesi - kompleks join olmadan
+    const roles = await Role.findAll({
+      raw: true
+    });
+
+    console.log("Roles fetched:", roles); // Debug için
+
+    res.render("admin/role-list", {
+      title: "Rol Listesi",
+      roles: roles,
+      action: req.query.action,
+    });
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    res.status(500).send("Roller alınırken bir hata oluştu.");
+  }
+};
+
+

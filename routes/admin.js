@@ -108,4 +108,9 @@ router.get(
   adminController.get_category_list
 );
 
+router.get("/admin/roles", authMiddleware, adminController.get_role_list);
+// router.get("/admin/roles/:roleid", authMiddleware, csrf, adminController.get_role_edit);
+// router.post("/admin/roles/:roleid/remove", authMiddleware, adminController.post_role_remove);
+
+
 module.exports = router; // Router nesnesini dışa aktar
